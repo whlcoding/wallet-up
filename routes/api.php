@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +16,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::post('v1/login', [AuthController::class, 'login']);
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+
+Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
+
+    // WALLETS
+    Route::get('/wallets', [WalletController::class, 'all']);
+    Route::get('/wallets/{wallet_id}', [WalletController::class, 'find']);
+    Route::post('/wallets', [WalletController::class, 'store']);
+    Route::delete('/wallets/{wallet_id}', [WalletController::class, 'destroy']);
 });
