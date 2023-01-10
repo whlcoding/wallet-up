@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
+use App\Models\Transaction;
 use App\Models\Wallet;
 use Illuminate\Database\Seeder;
 
@@ -14,6 +16,6 @@ class WalletsSeeder extends Seeder
      */
     public function run()
     {
-        Wallet::factory(5)->create();
+        Wallet::factory()->count(1)->has(Transaction::factory()->count(3)->for(Category::factory()))->create();
     }
 }
