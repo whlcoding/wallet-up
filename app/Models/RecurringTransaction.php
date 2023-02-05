@@ -28,6 +28,7 @@ class RecurringTransaction extends Model
         'frequency',
         'start_date',
         'end_date',
+        'due_date',
         'is_active'
     ];
 
