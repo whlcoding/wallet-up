@@ -29,8 +29,9 @@ class WalletController extends Controller
             ], 200);
         } catch (\Throwable $e) {
             return response()->json([
-                'errors' => [$e->getMessage()]
-            ], 500);
+                'message' => 'Failed to get wallets!',
+                'error' => $e->getMessage()
+            ], $e->getCode() ?? 500);
         }
     }
 
@@ -46,8 +47,9 @@ class WalletController extends Controller
             ], 200);
         } catch (\Throwable $e) {
             return response()->json([
-                'errors' => [$e->getMessage()]
-            ], 500);
+                'message' => 'Failed to find wallet!',
+                'error' => $e->getMessage()
+            ], $e->getCode() ?? 500);
         }
     }
 
@@ -66,8 +68,9 @@ class WalletController extends Controller
             ], 201);
         } catch (\Throwable $e) {
             return response()->json([
-                'errors' => [$e->getMessage()]
-            ], 500);
+                'message' => 'Failed to create wallet!',
+                'error' => $e->getMessage()
+            ], $e->getCode() ?? 500);
         }
     }
 
@@ -84,7 +87,8 @@ class WalletController extends Controller
             ], 200);
         } catch (\Throwable $e) {
             return response()->json([
-                'errors' => [$e->getMessage()]
+                'message' => 'Failed to delete wallet!',
+                'error' => $e->getMessage()
             ], $e->getCode() ?? 500);
         }
     }
