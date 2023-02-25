@@ -51,6 +51,6 @@ class Wallet extends Model
      */
     public function transactions(): HasMany
     {
-        return $this->hasMany(Wallet::class, 'wallet_id', 'id');
+        return $this->hasMany(Transaction::class, 'wallet_id', 'id');
     }
 }
