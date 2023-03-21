@@ -21,7 +21,8 @@ class RecurringTransactionFactory extends Factory
             'amount' => 150.00,
             'type' => 'income',
             'frequency' => 'monthly',
-            'start_date' => $this->faker->date_create()
+            'start_date' => $this->faker->date_create(),
+            'due_date' => $this->faker->date_create() // add another date
         ];
     }
 }
