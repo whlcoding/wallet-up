@@ -70,11 +70,12 @@ class AuthController extends Controller
      */
     public function register(Request $args): JsonResponse
     {
-        $validation = Validator::make($args->only(['first_name', 'last_name', 'email', 'password']), [
+        $validation = Validator::make($args->only(['first_name', 'last_name', 'email', 'password', 'password_confirmation']), [
             'first_name' => ['required', 'string', 'max:245'],
             'last_name' => ['required', 'string', 'max:245'],
             'email' => ['required', 'email'],
             'password' => ['required', 'string', 'max:245'],
+            'password_confirmation' => ['required', 'string', 'max:245', 'same:password']
         ]);
 
         if ($validation->fails()) {
