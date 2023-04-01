@@ -14,6 +14,18 @@ class AuthController extends Controller
 {
 
     /**
+     * index
+     *
+     * @return JsonResponse
+     */
+    public function index(): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Welcome to the Wallet UP API'
+        ], 200);
+    }
+
+    /**
      * logout
      *
      * @return JsonResponse
