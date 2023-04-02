@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\WalletController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,4 +33,14 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     Route::get('/wallets/{wallet_id}', [WalletController::class, 'find']);
     Route::post('/wallets', [WalletController::class, 'store']);
     Route::delete('/wallets/{wallet_id}', [WalletController::class, 'destroy']);
+
+    // TRANSACTIONS
+    Route::get('/wallets/{wallet_id}/transactions', [TransactionController::class, 'all']);
+    Route::get('/wallets/{wallet_id}/transactions/{transaction_id}', [TransactionController::class, 'find']);
+    Route::post('/wallets/{wallet_id}/transactions', [TransactionController::class, 'store']);
+    Route::delete('/wallets/{wallet_id}/transactions/{transaction_id}', [TransactionController::class, 'destroy']);
+    Route::put('/wallets/transactions', [TransactionController::class, 'update']);
+
+
+
 });
