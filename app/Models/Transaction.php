@@ -53,4 +53,22 @@ class Transaction extends Model
     {
         return $this->belongsTo(Wallet::class, 'category_id', 'id');
     }
+
+    public static function availableTypes(): array
+    {
+        return [
+            'expense',
+            'income',
+        ];
+    }
+
+    public static function availableStatuses(): array
+    {
+        return [
+            'pending',
+            'paid',
+            'overdue',
+            'voided'
+        ];
+    }
 }
