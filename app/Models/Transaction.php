@@ -32,6 +32,17 @@ class Transaction extends Model
         'recurring_transaction_id'
     ];
 
+    /** Transaction Types */
+    const TYPE_EXPENSE = 'expense';
+    const TYPE_INCOME = 'income';
+
+
+    /** Transaction Statuses */
+    const STATUS_PENDING = 'pending';
+    const STATUS_PAID = 'paid';
+    const STATUS_OVERDUE = 'overdue';
+    const STATUS_VOIDED = 'voided';
+
     // Relationships
 
     /**
@@ -57,18 +68,18 @@ class Transaction extends Model
     public static function availableTypes(): array
     {
         return [
-            'expense',
-            'income',
+            self::TYPE_EXPENSE,
+            self::TYPE_INCOME,
         ];
     }
 
     public static function availableStatuses(): array
     {
         return [
-            'pending',
-            'paid',
-            'overdue',
-            'voided'
+            self::STATUS_PENDING,
+            self::STATUS_PAID,
+            self::STATUS_OVERDUE,
+            self::STATUS_VOIDED,
         ];
     }
 }
