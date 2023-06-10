@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\ApiException;
+use App\Http\Requests\TransactionPaginationRequest;
 use App\Models\RecurringTransaction;
 use App\Models\Transaction;
 use App\Models\User;
@@ -11,7 +12,6 @@ use Illuminate\Support\Collection;
 
 class TransactionService
 {
-
     protected WalletService $walletService;
 
     public function __construct()
@@ -72,5 +72,17 @@ class TransactionService
 
         return $this->createTransaction($wallet, $recurringTransaction->wallet_id, $data);
     }
-}
 
+
+    public static function paginatedTransactions(Wallet $wallet, TransactionPaginationRequest $request): Collection
+    {
+        $transactions = $wallet->transactions()
+            ->where('status', $request->status)
+            ->where('type', $request->type)
+            ->offset($request->offset)
+            ->limit($request->limit)
+            ->get();
+
+        return $transactions;
+    }
+}

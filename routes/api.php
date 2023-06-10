@@ -40,7 +40,6 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     Route::post('/wallets/{wallet_id}/transactions', [TransactionController::class, 'store']);
     Route::delete('/wallets/{wallet_id}/transactions/{transaction_id}', [TransactionController::class, 'destroy']);
     Route::put('/wallets/transactions', [TransactionController::class, 'update']);
-
-
+    Route::post('/wallets/{wallet_id}/transactions/pagination', [TransactionController::class, 'pagination']);
 
 });
