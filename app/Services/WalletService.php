@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\ApiException;
 use App\Models\User;
 use App\Models\Wallet;
 use Exception;
@@ -21,7 +22,7 @@ class WalletService
     {
         $wallet = $user->wallets()->where('wallets.id', $wallet_id)->first();
         if (!$wallet) {
-            throw new Exception("This Wallet doesn't exist", 404);
+            throw new ApiException("This Wallet doesn't exist", 404);
         }
         return $wallet;
     }

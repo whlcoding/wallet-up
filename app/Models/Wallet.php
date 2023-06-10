@@ -19,7 +19,8 @@ class Wallet extends Model
      * @var array
      */
     protected $fillable = [
-        'name'
+        'name',
+        'balance',
     ];
 
     // Relationships

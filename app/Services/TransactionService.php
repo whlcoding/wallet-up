@@ -2,13 +2,56 @@
 
 namespace App\Services;
 
+use App\Exceptions\ApiException;
+use App\Http\Requests\TransactionPaginationRequest;
 use App\Models\RecurringTransaction;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
+use Illuminate\Support\Collection;
 
 class TransactionService
 {
+    protected WalletService $walletService;
+
+    public function __construct()
+    {
+        $this->walletService = new WalletService;
+    }
+
+    public function getAllTransactionsByWallet(User $user, int $walletID): Collection
+    {
+        $wallet = $this->walletService->findWalletByUser($user, $walletID);
+
+        return $wallet->transactions;
+    }
+
+    public function getTransactionByWallet(User $user, int $walletID, int $transactionID): Transaction
+    {
+        $wallet = $this->walletService->findWalletByUser($user, $walletID);
+
+        $transaction = $wallet->transactions()->find($transactionID);
+
+        if (!$transaction) {
+            throw new ApiException('Transaction not found!', 404);
+        }
+
+        return $transaction;
+    }
+
+
+    public function updateTransaction(User $user, int $walletID, int $transactionID, array $args): bool
+    {
+        $wallet = $this->walletService->findWalletByUser($user, $walletID);
+
+        $transaction = $wallet->transactions()->find($transactionID);
+
+        if (!$transaction) {
+            throw new ApiException('Transaction not found!', 404);
+        }
+
+        return $transaction->update($args);
+    }
 
     public function createTransaction(Wallet $wallet, array $args): Transaction
     {
@@ -29,5 +72,17 @@ class TransactionService
 
         return $this->createTransaction($wallet, $recurringTransaction->wallet_id, $data);
     }
-}
 
+
+    public static function paginatedTransactions(Wallet $wallet, TransactionPaginationRequest $request): Collection
+    {
+        $transactions = $wallet->transactions()
+            ->where('status', $request->status)
+            ->where('type', $request->type)
+            ->offset($request->offset)
+            ->limit($request->limit)
+            ->get();
+
+        return $transactions;
+    }
+}
