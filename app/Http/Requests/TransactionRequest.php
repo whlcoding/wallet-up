@@ -25,7 +25,6 @@ class TransactionRequest extends FormRequest
     public function rules()
     {
         return [
-            'wallet_id' => 'required|integer',
             'category_id' => 'required|integer',
             'name' => 'required|string|max:245',
             'description' => 'required|string|max:245',

@@ -30,7 +30,15 @@ class TransactionController extends Controller
 
     public function all(int $walletID): JsonResponse
     {
-        $transactions = $this->transactionService->getAllTransactionsByWallet($this->user, $walletID);
+        $wallet = Wallet::with('transactions')->where('user_id', $this->user->id)->where('id',$walletID)->first();
+
+        if (!$wallet) {
+            return response()->json([
+                'message' => 'Wallet not found!',
+            ], 404);
+        }
+
+        $transactions = $wallet->transactions;
 
         return response()->json([
             'message' => 'Transactions fetched successfully!',
@@ -40,7 +48,16 @@ class TransactionController extends Controller
 
     public function find(int $walletID, int $transactionId): JsonResponse
     {
-        $transaction = $this->transactionService->getTransactionByWallet($this->user, $walletID, $transactionId);
+
+        $walletExists = Wallet::where('user_id', $this->user->id)->where('id',$walletID)->exists();
+
+        if (!$walletExists) {
+            return response()->json([
+                'message' => 'Wallet not found!',
+            ], 404);
+        }
+
+        $transaction = $this->transactionService->findTransaction($walletID, $transactionId);
 
         return response()->json([
             'message' => 'Transaction fetched successfully!',
@@ -48,12 +65,17 @@ class TransactionController extends Controller
         ], 200);
     }
 
-    public function store(TransactionRequest $transactionRequest): JsonResponse
+    public function store(int $walletId, TransactionRequest $transactionRequest): JsonResponse
     {
-        $transaction = $this->transactionService->createTransaction(
-            $transactionRequest->input('wallet_id'),
-            $transactionRequest->toArray()
-        );
+        $wallet = Wallet::where('user_id', $this->user->id)->where('id',$walletId)->first();
+
+        if (!$wallet) {
+            return response()->json([
+                'message' => 'Wallet not found!',
+            ], 404);
+        }
+
+        $transaction = $wallet->transactions()->create($transactionRequest->toArray());
 
         return response()->json([
             'message' => 'Transaction Created Successfully!',
@@ -61,12 +83,19 @@ class TransactionController extends Controller
         ], 201);
     }
 
-    public function update(UpdateTransactionRequest $transactionRequest): JsonResponse
+    public function update(int $walletID, int $transactionID, UpdateTransactionRequest $transactionRequest): JsonResponse
     {
+        $walletExists = Wallet::where('user_id', $this->user->id)->where('id',$walletID)->exists();
+
+        if (!$walletExists) {
+            return response()->json([
+                'message' => 'Wallet not found!',
+            ], 404);
+        }
+
         $transaction = $this->transactionService->updateTransaction(
-            $this->user,
-            $transactionRequest->input('wallet_id'),
-            $transactionRequest->input('transaction_id'),
+            $walletID,
+            $transactionID,
             $transactionRequest->toArray()
         );
 
