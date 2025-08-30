@@ -26,11 +26,10 @@ class TransactionService
         return $wallet->transactions;
     }
 
-    public function getTransactionByWallet(User $user, int $walletID, int $transactionID): Transaction
-    {
-        $wallet = $this->walletService->findWalletByUser($user, $walletID);
 
-        $transaction = $wallet->transactions()->find($transactionID);
+    public function findTransaction(int $walletID, int $transactionID): Transaction
+    {
+        $transaction = Transaction::where('wallet_id', $walletID)->find($transactionID);
 
         if (!$transaction) {
             throw new ApiException('Transaction not found!', 404);
@@ -40,15 +39,9 @@ class TransactionService
     }
 
 
-    public function updateTransaction(User $user, int $walletID, int $transactionID, array $args): bool
+    public function updateTransaction(int $walletID, int $transactionID, array $args): bool
     {
-        $wallet = $this->walletService->findWalletByUser($user, $walletID);
-
-        $transaction = $wallet->transactions()->find($transactionID);
-
-        if (!$transaction) {
-            throw new ApiException('Transaction not found!', 404);
-        }
+        $transaction = $this->findTransaction($walletID, $transactionID);
 
         return $transaction->update($args);
     }
@@ -70,7 +63,7 @@ class TransactionService
             'recurring_transaction_id' => $recurringTransaction->id
         ];
 
-        return $this->createTransaction($wallet, $recurringTransaction->wallet_id, $data);
+        return $this->createTransaction($wallet, $data);
     }
 
 
