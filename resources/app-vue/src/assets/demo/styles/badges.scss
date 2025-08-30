@@ -1,5 +1,6 @@
 .customer-badge,
 .product-badge,
+.transaction-badge,
 .order-badge {
     border-radius: var(--border-radius);
     padding: .25em .5rem;
@@ -23,6 +24,28 @@
     &.status-lowstock {
         background: #FEEDAF;
         color: #8A5340;
+    }
+}
+
+.transaction-badge {
+    &.status-paid {
+        background: #C8E6C9;
+        color: #256029;
+    }
+
+    &.status-overdue {
+        background: #FFCDD2;
+        color: #C63737;
+    }
+
+    &.status-pending {
+        background: #FEEDAF;
+        color: #8A5340;
+    }
+
+    &.status-voided {
+        background: #ECCFFF;
+        color: #694382;
     }
 }
 

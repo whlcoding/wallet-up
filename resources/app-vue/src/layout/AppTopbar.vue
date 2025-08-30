@@ -2,12 +2,17 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useLayout } from '@/layout/composables/layout'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+import { useWalletStore } from '@/stores/walletStore'
+import axios from 'axios'
 
 const { layoutConfig, onMenuToggle } = useLayout()
 
 const outsideClickListener = ref(null)
 const topbarMenuActive = ref(false)
 const router = useRouter()
+const useAuth = useAuthStore()
+const useWallet = useWalletStore()
 
 onMounted(() => {
   bindOutsideClickListener()
@@ -28,6 +33,30 @@ const onSettingsClick = () => {
   topbarMenuActive.value = false
   router.push('/documentation')
 }
+
+const logout = async () => {
+  try {
+    await axios.get('http://localhost:8000/api/v1/logout', {
+    headers: {
+        Authorization: `Bearer ${useAuth.token}`,
+    }
+  }).then(() => {
+      useAuth.clearAuth()
+      useWallet.clearWalletStore()
+
+      router.push({ name: 'login' });
+    })
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const onLogoutClick = async () => {
+  topbarMenuActive.value = false
+
+  logout()
+}
+
 const topbarMenuClasses = computed(() => {
   return {
     'layout-topbar-menu-mobile-active': topbarMenuActive.value
@@ -94,6 +123,10 @@ const isOutsideClicked = (event) => {
       <button @click="onSettingsClick()" class="p-link layout-topbar-button">
         <i class="pi pi-cog"></i>
         <span>Settings</span>
+      </button>
+      <button @click="onLogoutClick()" class="p-link layout-topbar-button">
+        <i class="pi pi-power-off"></i>
+        <span>Logout</span>
       </button>
     </div>
   </div>
