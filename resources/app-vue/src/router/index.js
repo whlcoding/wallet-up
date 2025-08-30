@@ -1,17 +1,27 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import AppLayout from '@/layout/AppLayout.vue';
 
+import authVerification from '@/router/authVerification';
+
 const router = createRouter({
-    history: createWebHashHistory(),
+    history: createWebHistory(),
     routes: [
         {
             path: '/',
             component: AppLayout,
+            meta: {
+                auth: true
+            },
             children: [
                 {
                     path: '/',
                     name: 'dashboard',
                     component: () => import('@/views/Dashboard.vue')
+                },
+                {
+                    path: '/transactions',
+                    name: 'transactions',
+                    component: () => import('@/views/pages/Transactions.vue')
                 },
                 {
                     path: '/uikit/formlayout',
@@ -153,6 +163,10 @@ const router = createRouter({
             name: 'notfound',
             component: () => import('@/views/pages/NotFound.vue')
         },
+        {
+            path: '/:pathMatch(.*)*',
+            redirect: '/pages/notfound'
+        },
 
         {
             path: '/auth/login',
@@ -171,5 +185,7 @@ const router = createRouter({
         }
     ]
 });
+
+router.beforeEach(authVerification);
 
 export default router;
