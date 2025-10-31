@@ -27,6 +27,16 @@ class WalletService
         return $wallet;
     }
 
+    public function createFirstWallet(User $user): Wallet
+    {
+        $fields = [
+            'name' => 'My Wallet',
+            'balance' => 0
+        ];
+
+        return $this->createWallet($user, $fields);
+    }
+
     public function createWallet(User $user, array $fields): Wallet
     {
         return $user->wallets()->create($fields);

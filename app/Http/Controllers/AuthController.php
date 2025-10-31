@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\WalletService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,9 +31,22 @@ class AuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        Auth::user()->tokens()->delete();
+        // $request->user()->currentAccessToken()->delete();
+        // $request->user()->tokens()->delete();
+
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'errors' => ['You are not logged in'],
+                'redirect' => 'login'
+            ], 404);
+        }
+
+        $user->currentAccessToken()->delete();
+        $user->tokens()->delete();
 
         return response()->json([
             'message' => 'Logged out'
@@ -70,7 +84,9 @@ class AuthController extends Controller
 
         return response()->json([
             'token_access' => $token,
-            'token_type' => 'Bearer'
+            'token_type' => 'Bearer',
+            'user' => Auth::user(),  // Just for testing, create a dto to return only the necessary data
+            'wallets' => Auth::user()->wallets
         ], 200);
     }
 
@@ -96,12 +112,22 @@ class AuthController extends Controller
             ], 422);
         }
 
+        $user = User::where('email', $args->email)->first();
+
+        if ($user) {
+            return response()->json([
+                'errors' => ['Email already exists']
+            ], 422);
+        }
+
         $user = User::create([
             'first_name' => $args->first_name,
             'last_name' => $args->last_name,
             'email' => $args->email,
             'password' => Hash::make($args->password)
         ]);
+
+        (new WalletService)->createFirstWallet($user);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
