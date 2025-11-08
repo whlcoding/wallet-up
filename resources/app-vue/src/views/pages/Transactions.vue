@@ -1,10 +1,9 @@
 <script setup>
-import { FilterMatchMode } from 'primevue/api';
-import { ref, onMounted, onBeforeMount } from 'vue';
-import ProductService from '@/service/ProductService';
+import {FilterMatchMode} from 'primevue/api';
+import {onBeforeMount, onMounted, ref} from 'vue';
 import walletTransactionsService from '../../service/WalletTransactionsService';
-import { useToast } from 'primevue/usetoast';
-import { useWalletStore } from '../../stores/walletStore';
+import {useToast} from 'primevue/usetoast';
+import {useWalletStore} from '@/stores/walletStore';
 
 const toast = useToast();
 const useWallet = useWalletStore();
@@ -15,7 +14,15 @@ const productDialog = ref(false);
 const deleteProductDialog = ref(false);
 const deleteProductsDialog = ref(false);
 const product = ref({});
-const transaction = ref({});
+const transaction = ref({
+    category_id: 1,
+    name: '',
+    description: '',
+    amount: null,
+    type: 'income',
+    status: 'pending',
+    due_date: null,
+});
 const selectedProducts = ref(null);
 const selectedWallets = ref(null);
 const dt = ref(null);
@@ -74,6 +81,7 @@ const saveProduct = () => {
 
 const saveTransaction = async () => {
     submitted.value = true;
+    console.log(transaction.value);
     if (transaction.value.name && transaction.value.name.trim() && transaction.value.amount) {
         if (transaction.value.id) {
             const editedTransaction = await submitEditTransaction(transaction.value);
@@ -84,25 +92,31 @@ const saveTransaction = async () => {
             }
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Transaction Updated', life: 3000 });
         } else {
-            const newTransaction = await submitCreateTransaction(transaction.value);
-            console.log(newTransaction);
-            walletTransactions.value.push(newTransaction);
+            const selectedWallet = useWalletStore().selectedWallet
+            const newTransaction = await walletTransactionsService.createTransaction(selectedWallet.id, {
+                category_id: transaction.value.category_id,
+                name: transaction.value.name,
+                description: transaction.value.description,
+                amount: transaction.value.amount,
+                type: transaction.value.type,
+                status: transaction.value.status,
+                due_date: transaction.value.due_date,
+            });
+            // console.log(newTransaction);
+            // walletTransactions.value.push(newTransaction);
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Transaction Created', life: 3000 });
+            window.location.reload();
         }
     }
 };
 
 
 const submitEditTransaction = async (transaction) => {
-    const response = await walletTransactionsService.updateTransaction(transaction);
-
-    return response;
+    return await walletTransactionsService.updateTransaction(transaction);
 };
 
 const submitCreateTransaction = async (transaction) => {
-    const response = await walletTransactionsService.createTransaction(transaction);
-
-    return response;
+    return await walletTransactionsService.createTransaction(transaction);
 };
 
 const editProduct = (editProduct) => {
@@ -245,21 +259,22 @@ const initFilters = () => {
                     </Column>
                 </DataTable>
 
+                <!-- Create new transaction dialog -->
                 <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Transaction Details" :modal="true" class="p-fluid">
-                    <img :src="'demo/images/product/' + product.image" :alt="product.image" v-if="product.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" />
+<!--                    <img :src="'demo/images/product/' + product.image" :alt="product.image" v-if="product.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" />-->
                     <div class="field">
                         <label for="name">Name</label>
-                        <InputText id="name" v-model.trim="product.name" required="true" autofocus :class="{ 'p-invalid': submitted && !product.name }" />
-                        <small class="p-invalid" v-if="submitted && !product.name">Name is required.</small>
+                        <InputText id="name" v-model.trim="transaction.name" required="true" autofocus :class="{ 'p-invalid': submitted && !transaction.name }" />
+                        <small class="p-invalid" v-if="submitted && !transaction.name">Name is required.</small>
                     </div>
                     <div class="field">
                         <label for="description">Description</label>
-                        <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" />
+                        <Textarea id="description" v-model="transaction.description" required="true" rows="3" cols="20" />
                     </div>
 
                     <div class="field">
                         <label for="inventoryStatus" class="mb-3">Status</label>
-                        <Dropdown id="inventoryStatus" v-model="product.status" :options="statuses" optionLabel="label" placeholder="Select a Status">
+                        <Dropdown optionValue="value" id="inventoryStatus" v-model="transaction.status" :options="statuses" optionLabel="label" placeholder="Select a Status">
                             <template #value="slotProps">
                                 <div v-if="slotProps.value && slotProps.value.value">
                                     <span :class="'transaction-badge status-' + slotProps.value.value">{{ slotProps.value.label }}</span>
@@ -278,29 +293,35 @@ const initFilters = () => {
                         <label class="mb-3">Type</label>
                         <div class="formgrid grid">
                             <div class="field-radiobutton col-6">
-                                <RadioButton id="type1" name="type" value="income" v-model="product.type" />
+                                <RadioButton id="type1" name="type" value="income" v-model="transaction.type" />
                                 <label for="type1">Income</label>
                             </div>
                             <div class="field-radiobutton col-6">
-                                <RadioButton id="type2" name="type" value="expense" v-model="product.type" />
+                                <RadioButton id="type2" name="type" value="expense" v-model="transaction.type" />
                                 <label for="type2">Expense</label>
                             </div>
                         </div>
                     </div>
 
+                    <div class="field">
+                        <label for="transaction-duedate" class="mb-3">Due Date</label>
+                        <Calendar id="transaction-duedate" placeholder="mm/dd/yy" v-model="transaction.due_date" dateFormat="mm/dd/yy" showIcon />
+                    </div>
+
                     <div class="formgrid grid">
                         <div class="field col">
                             <label for="amount">Amount</label>
-                            <InputNumber id="amount" v-model="product.amount" mode="currency" currency="USD" locale="en-US" :class="{ 'p-invalid': submitted && !product.price }" :required="true" />
-                            <small class="p-invalid" v-if="submitted && !product.amount">Price is required.</small>
+                            <InputNumber id="amount" v-model="transaction.amount" mode="currency" currency="USD" locale="en-US" :class="{ 'p-invalid': submitted && !transaction.amount }" :required="true" />
+                            <small class="p-invalid" v-if="submitted && !transaction.amount">Price is required.</small>
                         </div>
                     </div>
                     <template #footer>
                         <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="hideDialog" />
-                        <Button label="Save" icon="pi pi-check" class="p-button-text" @click="saveProduct" />
+                        <Button label="Save" icon="pi pi-check" class="p-button-text" @click="saveTransaction" />
                     </template>
                 </Dialog>
 
+                <!-- delete transaction dialog -->
                 <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
@@ -315,6 +336,7 @@ const initFilters = () => {
                     </template>
                 </Dialog>
 
+                <!-- delete selected transactions dialog -->
                 <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />

@@ -38,6 +38,6 @@ class TransactionRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
-        dd($validator->errors());
+//        dd($validator->errors());
     }
 }

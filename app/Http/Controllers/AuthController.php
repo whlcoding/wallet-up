@@ -96,7 +96,7 @@ class AuthController extends Controller
      * @param  Request $args
      * @return JsonResponse
      */
-    public function register(Request $args): JsonResponse
+    public function signup(Request $args): JsonResponse
     {
         $validation = Validator::make($args->only(['first_name', 'last_name', 'email', 'password', 'password_confirmation']), [
             'first_name' => ['required', 'string', 'max:245'],
@@ -132,6 +132,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
+            'message' => 'Your account has been created successfully',
             'token_access' => $token,
             'token_type' => 'Bearer'
         ], 201);

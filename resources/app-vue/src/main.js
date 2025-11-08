@@ -109,6 +109,7 @@ import BlockViewer from '@/components/BlockViewer.vue';
 
 import './assets/styles.scss';
 import Login from './views/pages/auth/Login.vue';
+import Signup from "./views/pages/auth/Signup.vue";
 
 import axios from 'axios';
 
@@ -244,5 +245,6 @@ app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
 app.component('VirtualScroller', VirtualScroller);
 app.component('Login', Login);
+app.component('Signup', Signup);
 
 app.mount('#app')

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
@@ -67,6 +68,7 @@ class TransactionController extends Controller
 
     public function store(int $walletId, TransactionRequest $transactionRequest): JsonResponse
     {
+
         $wallet = Wallet::where('user_id', $this->user->id)->where('id',$walletId)->first();
 
         if (!$wallet) {
@@ -75,7 +77,9 @@ class TransactionController extends Controller
             ], 404);
         }
 
-        $transaction = $wallet->transactions()->create($transactionRequest->toArray());
+        $data =  $transactionRequest->toArray();
+        $data['due_date'] = Carbon::parse($data['due_date'])->toDateString();
+        $transaction = $wallet->transactions()->create($data);
 
         return response()->json([
             'message' => 'Transaction Created Successfully!',

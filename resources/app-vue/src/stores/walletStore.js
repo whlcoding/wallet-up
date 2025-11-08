@@ -19,7 +19,6 @@ export const useWalletStore = defineStore("wallet", {
         setSelectedWallet(wallet) {
             this.selectedWallet = wallet;
             localStorage.setItem("selectedWallet", JSON.stringify(wallet));
-
         },
         setWallets(wallets) {
             this.wallets = [...wallets];

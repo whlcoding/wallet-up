@@ -19,7 +19,7 @@ use App\Http\Controllers\TransactionController;
 Route::get('v1', [AuthController::class, 'index']);
 Route::post('v1/login', [AuthController::class, 'login']);
 
-Route::post('v1/register', [AuthController::class, 'register']);
+Route::post('v1/signup', [AuthController::class, 'signup']);
 
 //Route::get('v1/test', function () {
 //    dd('opa');
@@ -37,7 +37,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
+Route::middleware(['api', 'auth:sanctum'])->prefix('v1')->group(function () {
 
     // WALLETS
     Route::get('/wallets', [WalletController::class, 'all']);

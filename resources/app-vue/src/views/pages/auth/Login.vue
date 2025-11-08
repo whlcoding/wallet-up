@@ -3,8 +3,8 @@ import { useLayout } from '@/layout/composables/layout';
 import { ref, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 
-import { useAuthStore } from '../../../stores/authStore';
-import { useWalletStore } from '../../../stores/walletStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useWalletStore } from '@/stores/walletStore';
 
 import { useRouter } from 'vue-router';
 
@@ -98,6 +98,7 @@ const login = async () => {
                                 <label for="rememberme1">Remember me</label>
                             </div> -->
                             <a class="font-medium no-underline ml-2 mt-2 text-right cursor-pointer" style="color: var(--primary-color)">Forgot password?</a>
+                            <router-link to="/auth/signup" class="font-medium no-underline ml-2 mt-2 text-right cursor-pointer" style="color: var(--primary-color)">Create a new account</router-link>
                         </div>
                         <Button label="Sign In" class="w-full p-3 text-xl" @click="login"></Button>
                     </div>
