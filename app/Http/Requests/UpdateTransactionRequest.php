@@ -31,17 +31,17 @@ class UpdateTransactionRequest extends FormRequest
 
         return [
             'wallet_id' => 'required|integer',
-            'transaction_id' => 'required|integer',
-            'category_id' => 'integer,nullable',
+            'id' => 'required|integer',
+            'category_id' => 'integer|nullable',
             'name' => 'string|max:245',
-            'description' => 'string|max:245',
+            'description' => 'string|max:245|nullable',
             'type' => 'string|in:' . $availableTypes,
             'status' => 'string|in:' . $availableStatuses,
             'due_date' => 'string',
             'amount' => 'numeric',
             'is_active' => 'boolean',
             'is_recurring' => 'boolean',
-            'recurring_transaction_id' => 'integer',
+            'recurring_transaction_id' => 'integer|nullable',
         ];
     }
 
@@ -58,8 +58,8 @@ class UpdateTransactionRequest extends FormRequest
         return implode(',', $availableTypes);
     }
 
-    protected function failedValidation(Validator $validator)
-    {
-        dd($validator->errors());
-    }
+//    protected function failedValidation(Validator $validator)
+//    {
+////        dd($validator->errors());
+//    }
 }

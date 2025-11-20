@@ -45,12 +45,13 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('v1')->group(function () {
     Route::post('/wallets', [WalletController::class, 'store']);
     Route::delete('/wallets/{wallet_id}', [WalletController::class, 'destroy']);
 
-    // WALLET TRANSACTIONS
+    // TRANSACTIONS
     Route::get('/wallets/{wallet_id}/transactions', [TransactionController::class, 'all']);
     Route::get('/wallets/{wallet_id}/transactions/{transaction_id}', [TransactionController::class, 'find']);
     Route::post('/wallets/{wallet_id}/transactions', [TransactionController::class, 'store']);
     Route::delete('/wallets/{wallet_id}/transactions/{transaction_id}', [TransactionController::class, 'destroy']);
-    Route::put('/wallets/transactions', [TransactionController::class, 'update']);
+    Route::put('/wallets/{wallet_id}/transactions/{transaction_id}', [TransactionController::class, 'update']);
     Route::post('/wallets/{wallet_id}/transactions/pagination', [TransactionController::class, 'pagination']);
+//    Route::post('/wallets/{wallet_id}/transactions/{transaction_id}/duplicate', [TransactionController::class, 'duplicate']
 
 });

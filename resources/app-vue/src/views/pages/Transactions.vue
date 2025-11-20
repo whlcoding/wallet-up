@@ -15,7 +15,7 @@ const deleteProductDialog = ref(false);
 const deleteProductsDialog = ref(false);
 const product = ref({});
 const transaction = ref({
-    category_id: 1,
+    category_id: null,
     name: '',
     description: '',
     amount: null,
@@ -125,16 +125,26 @@ const editProduct = (editProduct) => {
     productDialog.value = true;
 };
 
-const confirmDeleteProduct = (editProduct) => {
+const confirmDeleteTransaction = (editProduct) => {
     product.value = editProduct;
     deleteProductDialog.value = true;
 };
 
-const deleteProduct = () => {
-    products.value = products.value.filter((val) => val.id !== product.value.id);
-    deleteProductDialog.value = false;
-    product.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+const deleteTransaction = async () => {
+    // products.value = products.value.filter((val) => val.id !== product.value.id);
+    try {
+        await walletTransactionsService.delete(product.value.wallet_id, product.value.id);
+        walletTransactions.value = walletTransactions.value.filter(function (transaction) {
+            return transaction.id !== product.value.id;
+        });
+
+        deleteProductDialog.value = false;
+        product.value = {};
+
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Transaction Deleted', life: 3000 });
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete transaction', life: 3000 });
+    }
 };
 
 const findIndexById = (id) => {
@@ -254,7 +264,7 @@ const initFilters = () => {
                     <Column headerStyle="min-width:10rem;">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editProduct(slotProps.data)" />
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2" @click="confirmDeleteProduct(slotProps.data)" />
+                            <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2" @click="confirmDeleteTransaction(slotProps.data)" />
                         </template>
                     </Column>
                 </DataTable>
@@ -332,7 +342,7 @@ const initFilters = () => {
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteProductDialog = false" />
-                        <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteProduct" />
+                        <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteTransaction" />
                     </template>
                 </Dialog>
 

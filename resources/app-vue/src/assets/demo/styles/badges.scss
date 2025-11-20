@@ -28,12 +28,14 @@
 }
 
 .transaction-badge {
-    &.status-paid {
+    &.status-paid,
+    &.type-income {
         background: #C8E6C9;
         color: #256029;
     }
 
-    &.status-overdue {
+    &.status-overdue,
+    &.type-expense {
         background: #FFCDD2;
         color: #C63737;
     }
@@ -46,6 +48,17 @@
     &.status-voided {
         background: #ECCFFF;
         color: #694382;
+    }
+}
+
+.transaction-price {
+    &.type-income {
+        color: var(--green-600);
+    }
+
+    &.type-expense {
+        //color: #C63737;
+        color: var(--red-600);
     }
 }
 

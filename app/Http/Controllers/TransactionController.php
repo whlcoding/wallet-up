@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TransactionPaginationRequest;
 use App\Http\Requests\TransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Services\TransactionService;
@@ -104,9 +105,33 @@ class TransactionController extends Controller
         );
 
         return response()->json([
-            'message' => 'Transaction Updated Successfully!',
-            'data' => $transaction
-        ], );
+            'message' => 'Transaction Updated Successfully!'
+        ]);
+    }
+
+    public function destroy(int $walletID, int $transactionID): JsonResponse
+    {
+        $walletExists = Wallet::where('user_id', $this->user->id)->where('id',$walletID)->exists();
+
+        if (!$walletExists) {
+            return response()->json([
+                'message' => 'Wallet not found!',
+            ], 404);
+        }
+
+        $transaction = Transaction::find($transactionID)->where('wallet_id', $walletID)->first();
+
+        if (!$transaction) {
+            return response()->json([
+                'message' => 'Transaction not found!',
+            ], 404);
+        }
+
+        $transaction->delete();
+
+        return response()->json([
+            'message' => 'Transaction Deleted Successfully!'
+        ]);
     }
 
     public function pagination(int $walletID, TransactionPaginationRequest $transactionRequest): JsonResponse
