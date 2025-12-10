@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import ProductService from '@/service/ProductService';
 import { useLayout } from '@/layout/composables/layout';
 import {useWalletStore} from "@/stores/walletStore";
@@ -7,9 +7,20 @@ import walletTransactionsService from "@/service/WalletTransactionsService";
 
 const useWallet = useWalletStore();
 
-const walletTransactions = ref(null);
 
-const { isDarkTheme } = useLayout();
+// exemplo de transações fictícias para exibir na UI (Income / Expense)
+const walletTransactions = ref([
+    { id: 1, wallet_id: 1, name: 'Salary - Acme Co.', type: 'Income', amount: 5200, status: 'Paid', date: '2025-12-01' },
+    { id: 2, wallet_id: 1, name: 'Salary Bonus', type: 'Income', amount: 800, status: 'Paid', date: '2025-12-05' },
+    { id: 3, wallet_id: 1, name: 'Rent', type: 'Expense', amount: 1200, status: 'Paid', date: '2025-12-03' },
+    { id: 4, wallet_id: 1, name: 'Electricity Bill', type: 'Expense', amount: 95, status: 'Pending', date: '2025-12-09' },
+    { id: 5, wallet_id: 1, name: 'Spotify Family', type: 'Expense', amount: 15, status: 'Paid', date: '2025-12-02' },
+    { id: 6, wallet_id: 1, name: 'Freelance Project', type: 'Income', amount: 650, status: 'Paid', date: '2025-12-07' },
+    { id: 7, wallet_id: 1, name: 'Gym Membership', type: 'Expense', amount: 45, status: 'Pending', date: '2025-12-10' }
+]);
+
+// invoke layout composable (no need to extract isDarkTheme here)
+useLayout();
 
 const products = ref(null);
 const barData = reactive({
@@ -40,14 +51,53 @@ const items = ref([
 const barOptions = ref(null);
 const productService = new ProductService();
 
+const accounts = ref([
+    { name: 'Checking Account', number: 'Chase •••• 0929', balance: 8420.75 },
+    { name: 'Savings Account', number: 'Ally •••• 5788', balance: 15460.33 }
+]);
+
+const goals = ref({
+    title: 'Vacation Fund',
+    target: 5000,
+    progress: 46,
+    nextCheck: '2026-01-01',
+    note: 'Saving monthly to cover a 10-day trip next year.'
+});
+
+// novo: estilo dinâmico para o indicador circular de progresso
+const goalProgressStyle = computed(() => ({
+    background: `conic-gradient(var(--primary-500) 0 ${goals.value.progress}%, var(--surface-200) ${goals.value.progress}% 100%)`
+}));
+
+const upcomingBills = ref([
+    { name: 'Electricity - City Power', date: 'Dec 09, 2025', amount: 95.00 },
+    { name: 'Gym Membership', date: 'Dec 10, 2025', amount: 45.00 },
+    { name: 'Spotify Family', date: 'Dec 15, 2025', amount: 14.99 }
+]);
+
+// contadores e métricas calculadas a partir das transações fictícias
+const txCount = computed(() => (walletTransactions.value || []).length);
+const monthlyIncome = computed(() => (walletTransactions.value || []).filter(t => t.type === 'Income').reduce((s, t) => s + Number(t.amount), 0));
+const monthlyExpenses = computed(() => (walletTransactions.value || []).filter(t => t.type === 'Expense').reduce((s, t) => s + Number(t.amount), 0));
+const savingsRate = computed(() => {
+    const income = monthlyIncome.value;
+    if (!income) return 0;
+    const saved = income - monthlyExpenses.value;
+    return Math.round((saved / income) * 100);
+});
+
+const totalBalance = computed(() => accounts.value.reduce((total, account) => total + account.balance, 0));
+
 onMounted(() => {
     productService.getProductsSmall().then((data) => (products.value = data));
+    // tenta popular via API se houver carteira selecionada, senão mantém os exemplos fictícios
     if (useWallet.selectedWallet) {
         walletTransactionsService.getTransactions(useWallet.selectedWallet.id).then((data) => {
-            console.log(data);
-            console.log(walletTransactions);
-            walletTransactions.value = data.data.data;
-            console.log(walletTransactions.value);
+            if (data && data.data && Array.isArray(data.data.data) && data.data.data.length) {
+                walletTransactions.value = data.data.data;
+            }
+        }).catch(() => {
+            // ignore: keep example data
         });
     }
 });
@@ -59,10 +109,12 @@ const formatCurrency = (value) => {
 
 
 const updateStatus = (transaction, status) => {
-    console.log(transaction, status);
+    // atualiza localmente (exemplo) e tenta enviar para a API
     transaction.status = status;
-    walletTransactionsService.update(transaction.wallet_id, transaction.id, transaction).then((response) => {
-
+    walletTransactions.value = walletTransactions.value.map(t => (t.id === transaction.id ? transaction : t));
+    walletTransactionsService.update(transaction.wallet_id, transaction.id, transaction).catch(() => {
+        // se falhar, mantemos localmente e exibimos no console
+        console.warn('Failed to update transaction status on server');
     });
 };
 
@@ -73,36 +125,118 @@ const updateStatus = (transaction, status) => {
 <template>
     <div class="grid">
 
-<!--        <div class="col-12 lg:col-6 xl:col-3">-->
-<!--            <div class="card mb-0">-->
-<!--                <div class="flex justify-content-between mb-3">-->
-<!--                    <div>-->
-<!--                        <span class="block text-500 font-medium mb-3">Customers</span>-->
-<!--                        <div class="text-900 font-medium text-xl">28441</div>-->
-<!--                    </div>-->
-<!--                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.5rem; height: 2.5rem">-->
-<!--                        <i class="pi pi-inbox text-cyan-500 text-xl"></i>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <span class="text-green-500 font-medium">520 </span>-->
-<!--                <span class="text-500">newly registered</span>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--        <div class="col-12 lg:col-6 xl:col-3">-->
-<!--            <div class="card mb-0">-->
-<!--                <div class="flex justify-content-between mb-3">-->
-<!--                    <div>-->
-<!--                        <span class="block text-500 font-medium mb-3">Comments</span>-->
-<!--                        <div class="text-900 font-medium text-xl">152 Unread</div>-->
-<!--                    </div>-->
-<!--                    <div class="flex align-items-center justify-content-center bg-purple-100 border-round" style="width: 2.5rem; height: 2.5rem">-->
-<!--                        <i class="pi pi-comment text-purple-500 text-xl"></i>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <span class="text-green-500 font-medium">85 </span>-->
-<!--                <span class="text-500">responded</span>-->
-<!--            </div>-->
-<!--        </div>-->
+        <!-- Total Balance (melhor hierarquia, ações rápidas) -->
+        <div class="col-12 xl:col-6">
+            <div class="card h-full">
+                <div class="flex align-items-start justify-content-between mb-4 gap-3">
+                    <div>
+                        <div class="flex align-items-center gap-3">
+                            <p class="text-600 m-0">Total Balance</p>
+                            <span class="surface-200 border-round px-2 py-1 text-600">{{ accounts.length }} accounts · {{ txCount }} txns</span>
+                        </div>
+
+                        <h2 class="text-900 m-0 mt-3" style="letter-spacing: -0.5px">{{ formatCurrency(totalBalance) }}</h2>
+                        <p class="text-500 mt-2">Available balance across your linked accounts</p>
+                    </div>
+
+                    <div class="flex flex-column align-items-end gap-2">
+                        <Button label="Add Money" icon="pi pi-plus" class="p-button-sm p-button-outlined" aria-label="Add money"></Button>
+                        <Button label="Transfer" icon="pi pi-external-link" class="p-button-sm" aria-label="Transfer"></Button>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div v-for="(account, index) in accounts" :key="index" class="col-12 md:col-6">
+                        <div class="surface-50 border-1 surface-border border-round p-3">
+                            <div class="flex align-items-center justify-content-between mb-2">
+                                <div>
+                                    <div class="text-700">{{ account.name }}</div>
+                                    <div class="text-500 text-sm">{{ account.number }}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-900 font-medium">{{ formatCurrency(account.balance) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex align-items-center justify-content-between mt-4">
+                    <div>
+                        <p class="text-600 mb-1">Goal Set</p>
+                        <h4 class="text-900 m-0">{{ formatCurrency(goals.target) }}</h4>
+                    </div>
+                    <div class="flex align-items-center gap-2">
+                        <i class="pi pi-chart-line text-green-500"></i>
+                        <span class="text-600">{{ goals.note }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goal card (mais foco no progresso + ação) -->
+        <div class="col-12 md:col-6 xl:col-3">
+            <div class="card h-full">
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <p class="text-600 mb-1">{{ goals.title }}</p>
+                        <h3 class="text-900 m-0">{{ formatCurrency(goals.target) }}</h3>
+                    </div>
+                    <div class="text-center">
+                        <div class="goal-progress" :style="goalProgressStyle">{{ goals.progress }}%</div>
+                        <p class="text-500 mt-2">Reached</p>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <p class="text-600 mb-1">Next check</p>
+                    <h4 class="text-900 mt-0">{{ goals.nextCheck }}</h4>
+                </div>
+
+                <p class="text-600 m-0 mb-3">{{ goals.note }}</p>
+                <div class="flex gap-2 mt-3">
+                    <Button label="View Goal" icon="pi pi-eye" class="p-button-sm p-button-outlined"></Button>
+                    <Button label="Contribute" icon="pi pi-wallet" class="p-button-sm p-button-success"></Button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Bills (melhor leitura, badges e ação) -->
+        <div class="col-12 md:col-6 xl:col-3">
+            <div class="card h-full">
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <p class="text-600 mb-1">Upcoming Bills</p>
+                        <h3 class="text-900 m-0">This week</h3>
+                    </div>
+                    <div class="surface-100 border-round p-2 text-center">
+                        <p class="text-600 m-0">Next</p>
+                        <h4 class="text-900 m-0">{{ formatCurrency(upcomingBills[0].amount) }}</h4>
+                    </div>
+                </div>
+
+                <ul class="list-none p-0 m-0">
+                    <li v-for="(bill, index) in upcomingBills" :key="index" class="flex align-items-center justify-content-between py-3 border-bottom-1 surface-border">
+                        <div>
+                            <p class="text-900 font-medium mb-1">{{ bill.name }}</p>
+                            <div class="text-600 text-sm">{{ bill.date }}</div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-900 font-semibold mb-1" :class="{'text-red-500': true}">{{ formatCurrency(bill.amount) }}</p>
+                            <span class="text-500">to Pay</span>
+                        </div>
+                    </li>
+                </ul>
+
+                <div class="flex align-items-center justify-content-between mt-3">
+                    <div class="text-500">Next bill: <strong>{{ upcomingBills[0].name }}</strong></div>
+                    <div class="flex gap-2">
+                        <Button label="Manage bills" icon="pi pi-cog" class="p-button-text p-button-sm"></Button>
+                        <Button label="View all" icon="pi pi-list" class="p-button-sm p-button-outlined"></Button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="col-12 lg:col-6 d-flex">
             <div class="grid">
@@ -110,30 +244,28 @@ const updateStatus = (transaction, status) => {
                     <div class="card mb-0">
                         <div class="flex justify-content-between mb-3">
                             <div>
-                                <span class="block text-500 font-medium mb-3">Orders</span>
-                                <div class="text-900 font-medium text-xl">152</div>
+                                <span class="block text-500 font-medium mb-3">Monthly Income</span>
+                                <div class="text-900 font-medium text-xl">{{ formatCurrency(monthlyIncome) }}</div>
                             </div>
-                            <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
-                                <i class="pi pi-shopping-cart text-blue-500 text-xl"></i>
+                            <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                                <i class="pi pi-wallet text-green-500 text-xl"></i>
                             </div>
                         </div>
-                        <span class="text-green-500 font-medium">24 new </span>
-                        <span class="text-500">since last visit</span>
+                        <span class="text-500">Includes salary and freelance payments</span>
                     </div>
                 </div>
                 <div class="col-12 lg:col-6">
                     <div class="card mb-0">
                         <div class="flex justify-content-between mb-3">
                             <div>
-                                <span class="block text-500 font-medium mb-3">Revenue</span>
-                                <div class="text-900 font-medium text-xl">$2.100</div>
+                                <span class="block text-500 font-medium mb-3">Monthly Expenses</span>
+                                <div class="text-900 font-medium text-xl">{{ formatCurrency(monthlyExpenses) }}</div>
                             </div>
-                            <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
-                                <i class="pi pi-map-marker text-orange-500 text-xl"></i>
+                            <div class="flex align-items-center justify-content-center bg-red-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                                <i class="pi pi-dollar text-red-500 text-xl"></i>
                             </div>
                         </div>
-                        <span class="text-green-500 font-medium">%52+ </span>
-                        <span class="text-500">since last week</span>
+                        <span class="text-500">Savings rate: <strong>{{ savingsRate }}%</strong></span>
                     </div>
                 </div>
                 <div class="col-12">
@@ -162,8 +294,8 @@ const updateStatus = (transaction, status) => {
                                 <template #header> Actions </template>
                                 <template #body="slotProps">
                                     <div class="flex gap-1 justify-content-center">
-                                        <Button icon="pi pi-thumbs-up" type="button" class="p-button-text" @click="updateStatus(slotProps.data, 'paid')"></Button>
-                                        <Button icon="pi pi-thumbs-down" type="button" class="p-button-text" @click="updateStatus(slotProps.data, 'pending')"></Button>
+                                        <Button icon="pi pi-thumbs-up" type="button" class="p-button-text" @click="updateStatus(slotProps.data, 'Paid')"></Button>
+                                        <Button icon="pi pi-thumbs-down" type="button" class="p-button-text" @click="updateStatus(slotProps.data, 'Pending')"></Button>
                                     </div>
                                 </template>
                             </Column>
@@ -316,3 +448,18 @@ const updateStatus = (transaction, status) => {
         </div>
     </div>
 </template>
+
+<style scoped>
+.goal-progress {
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    border: 8px solid var(--surface-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-700);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+</style>
