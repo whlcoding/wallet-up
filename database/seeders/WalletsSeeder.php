@@ -16,6 +16,6 @@ class WalletsSeeder extends Seeder
      */
     public function run()
     {
-        Wallet::factory()->count(1)->has(Transaction::factory()->count(3)->for(Category::factory()))->create();
+        Wallet::factory()->count(350)->has(Transaction::factory()->count(1500)->for(Category::factory()))->create();
     }
 }

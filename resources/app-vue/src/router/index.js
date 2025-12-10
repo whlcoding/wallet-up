@@ -24,6 +24,11 @@ const router = createRouter({
                     component: () => import('@/views/pages/Transactions.vue')
                 },
                 {
+                    path: '/wallets',
+                    name: 'wallets',
+                    component: () => import('@/views/pages/Wallets.vue')
+                },
+                {
                     path: '/uikit/formlayout',
                     name: 'formlayout',
                     component: () => import('@/views/uikit/FormLayout.vue')

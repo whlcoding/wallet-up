@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\WalletRequest;
 use App\Models\User;
+use App\Models\Wallet;
 use App\Services\WalletService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -74,6 +75,27 @@ class WalletController extends Controller
         }
     }
 
+    public function update(WalletRequest $walletRequest, Int $wallet_id): JsonResponse
+    {
+        $user = Auth::user();
+
+        $fields = $walletRequest->only(['name']);
+        $wallet = Wallet::find($wallet_id);
+
+        if (!$wallet || $wallet->user_id !== $user->id) {
+            return response()->json([
+                'message' => "This Wallet doesn't exist"
+            ], 404);
+        }
+
+        $wallet->name = $fields['name'];
+        $wallet->save();
+
+        return response()->json([
+            'data' => $wallet,
+            'message' => 'Wallet Updated Successfully'
+        ], 200);
+    }
     public function destroy(Int $wallet_id): JsonResponse
     {
         $user = Auth::user();

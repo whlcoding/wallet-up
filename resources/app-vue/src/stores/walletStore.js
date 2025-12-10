@@ -18,11 +18,38 @@ export const useWalletStore = defineStore("wallet", {
     actions: {
         setSelectedWallet(wallet) {
             this.selectedWallet = wallet;
-            localStorage.setItem("selectedWallet", JSON.stringify(wallet));
+            if (wallet) {
+                localStorage.setItem("selectedWallet", JSON.stringify(wallet));
+            } else {
+                localStorage.removeItem("selectedWallet");
+            }
         },
         setWallets(wallets) {
             this.wallets = [...wallets];
             localStorage.setItem("wallets", JSON.stringify(wallets));
+        },
+        addWallet(wallet) {
+            this.setWallets([...this.wallets, wallet]);
+        },
+        updateWallet(updatedWallet) {
+            const wallets = this.wallets.map((wallet) =>
+                wallet.id === updatedWallet.id ? { ...wallet, ...updatedWallet } : wallet
+            );
+
+            this.setWallets(wallets);
+
+            if (this.selectedWallet?.id === updatedWallet.id) {
+                this.setSelectedWallet(wallets.find((wallet) => wallet.id === updatedWallet.id) || null);
+            }
+        },
+        removeWallet(walletId) {
+            const wallets = this.wallets.filter((wallet) => wallet.id !== walletId);
+
+            this.setWallets(wallets);
+
+            if (this.selectedWallet?.id === walletId) {
+                this.setSelectedWallet(wallets[0] || null);
+            }
         },
         clearWalletStore() {
             this.wallets = [];
